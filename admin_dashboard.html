@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin Dashboard - Mental Wellbeing</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main class="admin-page">
+        <div class="admin-card">
+            <header class="admin-header">
+                <h1>Admin Dashboard</h1>
+                <div>
+                    <button id="adminLogout" class="btn-secondary">Logout</button>
+                    <button id="showUsersBtn" class="btn-primary" style="margin-left:0.5rem;">Show Users</button>
+                </div>
+            </header>
+
+            <section class="admin-content">
+                <h2>Overview</h2>
+                <p id="overviewText">Loading...</p>
+                <h3>Stored Data</h3>
+                <pre id="rawData" class="raw-data" style="max-height:260px; overflow:auto;"></pre>
+
+                <h3 style="margin-top:1rem;">User Accounts</h3>
+                <div id="usersContainer" style="display:none;">
+                    <p style="font-size:0.95rem; color:#555;">Click a row to view full details. Storing plaintext passwords in localStorage is insecure — this is a demo only.</p>
+                    <table id="usersTable" class="users-table" style="width:100%; border-collapse:collapse; margin-top:0.5rem;">
+                        <thead>
+                            <tr style="text-align:left; border-bottom:1px solid #ddd;">
+                                <th style="padding:8px;">Email</th>
+                                <th style="padding:8px;">Role</th>
+                                <th style="padding:8px;">Created</th>
+                                <th style="padding:8px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTbody"></tbody>
+                    </table>
+                    <div id="userDetails" style="margin-top:0.75rem; padding:0.5rem; background:#f9f9f9; border:1px solid #eee; display:none;"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // Basic admin guard and small UI to inspect localStorage data (demo only)
+        (function(){
+            const role = localStorage.getItem('loggedInRole');
+            if (role !== 'admin') {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('adminLogout').addEventListener('click', () => {
+                localStorage.removeItem('loggedInRole');
+                localStorage.removeItem('loggedInToken');
+                window.location.href = 'login.html';
+            });
+
+            // Show some data from localStorage for admin inspection
+            const mood = localStorage.getItem('moodHistory');
+            const users = localStorage.getItem('demoUsers');
+            const overview = document.getElementById('overviewText');
+            const accountCountsEl = document.createElement('div');
+            accountCountsEl.id = 'accountCounts';
+            accountCountsEl.style.marginTop = '0.5rem';
+            accountCountsEl.style.fontSize = '0.95rem';
+            overview.parentNode.insertBefore(accountCountsEl, overview.nextSibling);
+            const raw = document.getElementById('rawData');
+
+            let totalEntries = 0;
+            try {
+                const parsed = mood ? JSON.parse(mood) : [];
+                totalEntries = parsed.length || 0;
+                raw.textContent = JSON.stringify({ moodHistory: parsed.slice(-20), demoUsers: users ? JSON.parse(users) : null }, null, 2);
+            } catch (e) {
+                raw.textContent = String(mood || users || 'No data');
+            }
+
+            overview.textContent = `Mood entries stored: ${totalEntries}`;
+
+            // Show created/deleted account counts for admin (demo only)
+            if (window.Auth && typeof window.Auth.getAccountCounts === 'function') {
+                const counts = window.Auth.getAccountCounts();
+                accountCountsEl.textContent = `Accounts created: ${counts.created} • Accounts deleted: ${counts.deleted}`;
+            } else {
+                accountCountsEl.textContent = '';
+            }
+
+            // Wire up Show Users button to render stored demo users
+            const showBtn = document.getElementById('showUsersBtn');
+            const usersContainer = document.getElementById('usersContainer');
+            const usersTbody = document.getElementById('usersTbody');
+            const userDetails = document.getElementById('userDetails');
+
+            function formatDate(ts) {
+                try { return new Date(Number(ts)).toLocaleString(); } catch (e) { return String(ts); }
+            }
+
+            function renderUsers() {
+                // Use the Auth helper to get stored users (returns array)
+                const usersArr = (window.Auth && typeof window.Auth.getAllUsers === 'function') ? window.Auth.getAllUsers() : (users ? JSON.parse(users) : []);
+                usersTbody.innerHTML = '';
+                if (!usersArr || usersArr.length === 0) {
+                    usersTbody.innerHTML = '<tr><td colspan="4" style="padding:8px; color:#666;">No user accounts found.</td></tr>';
+                    return;
+                }
+
+                usersArr.forEach(u => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid #f1f1f1';
+                    tr.innerHTML = `
+                        <td style="padding:8px;">${(u.email||'').replace(/</g,'&lt;')}</td>
+                        <td style="padding:8px;">${(u.role||'user')}</td>
+                        <td style="padding:8px;">${formatDate(u.createdAt)}</td>
+                        <td style="padding:8px;"><button class="btn-secondary" data-email="${(u.email||'')}">View</button></td>
+                    `;
+                    usersTbody.appendChild(tr);
+                });
+
+                // Attach click handlers for view buttons
+                usersTbody.querySelectorAll('button[data-email]').forEach(b => {
+                    b.addEventListener('click', (ev) => {
+                        const email = ev.currentTarget.getAttribute('data-email');
+                        const u = (window.Auth && typeof window.Auth.getUserByEmail === 'function') ? window.Auth.getUserByEmail(email) : null;
+                        if (!u) {
+                            userDetails.style.display = 'block';
+                            userDetails.textContent = 'User not found';
+                            return;
+                        }
+                        userDetails.style.display = 'block';
+                        // Show sanitized JSON with full details (demo only)
+                        userDetails.textContent = JSON.stringify(u, null, 2);
+                    });
+                });
+            }
+
+            showBtn.addEventListener('click', () => {
+                if (usersContainer.style.display === 'none') {
+                    if (!confirm('Admin: show full user list? This will display user emails and profile details stored in localStorage. Continue?')) return;
+                    usersContainer.style.display = 'block';
+                    renderUsers();
+                    showBtn.textContent = 'Hide Users';
+                } else {
+                    usersContainer.style.display = 'none';
+                    userDetails.style.display = 'none';
+                    showBtn.textContent = 'Show Users';
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

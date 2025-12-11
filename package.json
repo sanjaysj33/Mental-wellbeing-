@@ -1,0 +1,42 @@
+{
+  "name": "mental-wellbeing-app",
+  "version": "1.0.0",
+  "description": "A modern web application for mental wellbeing with mood tracking, self-care tips, and breathing exercises",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx live-server --port=3000 --open=/index.html",
+    "dev": "npx live-server --port=3000 --open=/index.html --watch=.",
+    "build": "echo 'No build process needed for this static app'",
+    "serve": "npx http-server -p 3000 -o",
+    "lint": "echo 'Linting not configured for this project'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "mental-health",
+    "wellbeing",
+    "mood-tracking",
+    "self-care",
+    "breathing-exercise",
+    "mindfulness",
+    "web-app"
+  ],
+  "author": "Mental Wellbeing Team",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/mental-wellbeing-app.git"
+  },
+  "homepage": "https://your-username.github.io/mental-wellbeing-app",
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

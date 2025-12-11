@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Login - Mental Wellbeing</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <main class="login-page">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>Mental Wellbeing</h1>
+                <p>Sign in as User or Admin </p>
+            </div>
+
+            <div class="login-tabs">
+                <button id="tabUser" class="tab active">User</button>
+                <button id="tabAdmin" class="tab">Admin</button>
+            </div>
+
+            <form id="loginForm" class="login-form">
+                <input type="email" id="email" placeholder="Email" required />
+                <input type="password" id="password" placeholder="Password" required />
+                <button type="submit" class="btn-primary">Sign In</button>
+            </form>
+
+            <div class="create-account-line">
+                <span>Don't have an account?</span>
+                <button id="showRegisterBtn" class="tab" style="display:inline-block; margin-left:0.5rem; padding:0.35rem 0.6rem;">Create one</button>
+            </div>
+
+            <form id="registerForm" class="login-form" style="display:none; margin-top:1rem;">
+                <input type="email" id="regEmail" placeholder="Your email" required />
+                <input type="password" id="regPassword" placeholder="Password" required />
+                <input type="password" id="regPasswordConfirm" placeholder="Confirm password" required />
+                <input type="text" id="regName" placeholder="Full name (optional)" />
+                <input type="number" id="regAge" placeholder="Age (optional)" min="0" />
+                <input type="text" id="regBloodGroup" placeholder="Blood group (optional)" />
+                <input type="text" id="regHeight" placeholder="Height (e.g. 170 cm)" />
+                <input type="text" id="regWeight" placeholder="Weight (e.g. 65 kg)" />
+                <input type="text" id="regMedical" placeholder="Medical problems (optional)" />
+                <label style="font-size:0.9rem; color:#444; margin-top:0.2rem;">Profile picture (optional)</label>
+                <input type="file" id="regAvatar" accept="image/*" />
+                <button type="submit" class="btn-primary">Create Account</button>
+                <button type="button" id="cancelRegister" class="btn-secondary" style="margin-top:0.5rem;">Cancel</button>
+            </form>
+
+            <!-- Demo credentials removed from UI per request -->
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        // Small login page logic that uses the global Auth helper in script.js
+        (function(){
+            const tabUser = document.getElementById('tabUser');
+            const tabAdmin = document.getElementById('tabAdmin');
+            let role = 'user';
+
+            function setActive() {
+                tabUser.classList.toggle('active', role === 'user');
+                tabAdmin.classList.toggle('active', role === 'admin');
+            }
+
+            tabUser.addEventListener('click', () => { role = 'user'; setActive(); });
+            tabAdmin.addEventListener('click', () => { role = 'admin'; setActive(); });
+
+            const form = document.getElementById('loginForm');
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value.trim();
+                const res = window.Auth.login(role, email, password);
+                if (res.success) {
+                    // Redirect according to role
+                    if (role === 'user') window.location.href = 'index.html';
+                    else window.location.href = 'admin_dashboard.html';
+                } else {
+                    window.UI && window.UI.showToast ? window.UI.showToast(res.message || 'Invalid credentials','error') : alert(res.message || 'Invalid credentials');
+                }
+            });
+
+            // Register flow
+            const showRegisterBtn = document.getElementById('showRegisterBtn');
+            const registerForm = document.getElementById('registerForm');
+            const cancelRegister = document.getElementById('cancelRegister');
+
+            showRegisterBtn.addEventListener('click', () => {
+                registerForm.style.display = 'block';
+                form.style.display = 'none';
+                showRegisterBtn.style.display = 'none';
+            });
+
+            cancelRegister.addEventListener('click', () => {
+                registerForm.style.display = 'none';
+                form.style.display = 'block';
+                showRegisterBtn.style.display = 'inline-block';
+            });
+
+            registerForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('regEmail').value.trim();
+                const password = document.getElementById('regPassword').value.trim();
+                const confirm = document.getElementById('regPasswordConfirm').value.trim();
+                if (!email || !password) {
+                    alert('Please enter email and password');
+                    return;
+                }
+                if (password !== confirm) {
+                    alert('Passwords do not match');
+                    return;
+                }
+
+                // Collect profile fields
+                const profile = {
+                    name: document.getElementById('regName').value.trim() || '',
+                    age: document.getElementById('regAge').value ? Number(document.getElementById('regAge').value) : null,
+                    bloodGroup: document.getElementById('regBloodGroup').value.trim() || '',
+                    height: document.getElementById('regHeight').value.trim() || '',
+                    weight: document.getElementById('regWeight').value.trim() || '',
+                    medical: document.getElementById('regMedical').value.trim() || ''
+                };
+
+                const avatarInput = document.getElementById('regAvatar');
+                const file = avatarInput && avatarInput.files && avatarInput.files[0];
+
+                function doRegister(avatarDataUrl) {
+                    if (avatarDataUrl) profile.avatarUrl = avatarDataUrl;
+                    const res = window.Auth.register(email, password, profile);
+                    if (res.success) {
+                        // Auto-login the new user
+                        window.Auth.login('user', email, password);
+                        window.location.href = 'index.html';
+                    } else {
+                        window.UI && window.UI.showToast ? window.UI.showToast(res.message || 'Unable to create account','error') : alert(res.message || 'Unable to create account');
+                    }
+                }
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        doRegister(ev.target.result);
+                    };
+                    reader.onerror = function() {
+                        // still try register without avatar
+                        doRegister();
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    doRegister();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

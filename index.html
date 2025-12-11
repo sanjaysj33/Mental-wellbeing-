@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Wellbeing - Your Personal Wellness Companion</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <script>
+        // Simple client-side access control: redirect to login if not authenticated
+        (function(){
+            try {
+                const role = localStorage.getItem('loggedInRole');
+                if (!role) {
+                    window.location.href = 'login.html';
+                } else if (role === 'admin') {
+                    // Admin should see admin dashboard, not the user app
+                    window.location.href = 'admin_dashboard.html';
+                }
+            } catch (e) {
+                console.error('Auth redirect error', e);
+            }
+        })();
+    </script>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class=""></i>
+                        <h1>Mental Wellbeing</h1>
+                </div>
+                    <div id="profileCard" style="display:flex; align-items:center; gap:0.5rem; position:absolute; left:1.5rem; top:1rem;">
+                        <!-- Populated at runtime -->
+                    </div>
+                <p class="tagline">Your personal wellness companion</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Welcome Section -->
+            <section class="welcome-section">
+                <div class="welcome-card">
+                    <h2>🌟 Welcome to Your Wellness Journey</h2>
+                    <p>Track your mood, discover self-care tips, and practice mindfulness. Remember: You're not alone. Small steps make a big difference.</p>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+                <div class="action-grid">
+                    <button class="action-card" id="logMoodBtn">
+                        <div class="action-icon">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                        <h3>Log Today's Mood</h3>
+                        <p>Track how you're feeling</p>
+                    </button>
+
+                    <button class="action-card" id="viewHistoryBtn">
+                        <div class="action-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Mood History</h3>
+                        <p>View your progress</p>
+                    </button>
+
+                    <button class="action-card" id="randomTipBtn">
+                        <div class="action-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3>Random Tip</h3>
+                        <p>Get a self-care suggestion</p>
+                    </button>
+
+                    <button class="action-card" id="breathingBtn">
+                        <div class="action-icon">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <h3>Breathing Exercise</h3>
+                        <p>Practice mindfulness</p>
+                    </button>
+
+                    <button class="action-card" id="findHelpBtn">
+                        <div class="action-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h3>Find Help Nearby</h3>
+                        <p>Locate hospitals & medical centers</p>
+                    </button>
+
+                    <button class="action-card" id="connectWatchBtn">
+                        <div class="action-icon">
+                            <i class="fas fa-watch-smart"></i>
+                        </div>
+                        <h3>Connect Smartwatch</h3>
+                        <p>Sync heart rate and health data</p>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Content Areas -->
+            <section class="content-area">
+                <!-- Mood Logging Modal -->
+                <div id="moodModal" class="modal">
+                    <div class="modal-content mood-modal">
+                        <div class="modal-header">
+                            <div class="header-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <h2>How are you feeling today?</h2>
+                            <button class="close-btn" id="closeMoodModal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mood-form-container">
+                                <!-- Date Selection -->
+                                <div class="form-section">
+                                    <div class="section-header">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <h3>Select Date</h3>
+                                    </div>
+                                    <div class="date-picker-container">
+                                        <input type="date" id="moodDate" required>
+                                        <div class="date-preview">
+                                            <span id="datePreview">Today</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Mood Rating -->
+                                <div class="form-section">
+                                    <div class="section-header">
+                                        <i class="fas fa-smile"></i>
+                                        <h3>Rate Your Mood</h3>
+                                    </div>
+                                    <div class="mood-rating-container">
+                                        <div class="mood-emoji-display">
+                                            <div class="emoji-circle" id="moodEmoji">😐</div>
+                                            <div class="mood-label" id="moodLabel">Neutral</div>
+                                        </div>
+                                        <div class="rating-slider-container">
+                                            <div class="slider-track">
+                                                <div class="slider-fill" id="sliderFill"></div>
+                                                <input type="range" id="moodRating" min="1" max="10" value="5" class="mood-slider">
+                                            </div>
+                                            <div class="rating-labels">
+                                                <span class="rating-label">😢</span>
+                                                <span class="rating-label">😕</span>
+                                                <span class="rating-label">😐</span>
+                                                <span class="rating-label">🙂</span>
+                                                <span class="rating-label">😊</span>
+                                            </div>
+                                        </div>
+                                        <div class="rating-display">
+                                            <span class="rating-number" id="ratingValue">5</span>
+                                            <span class="rating-max">/10</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Mood Categories -->
+                                <div class="form-section">
+                                    <div class="section-header">
+                                        <i class="fas fa-tags"></i>
+                                        <h3>Mood Categories</h3>
+                                    </div>
+                                    <div class="mood-categories">
+                                        <button class="mood-category" data-mood="happy">
+                                            <i class="fas fa-laugh"></i>
+                                            <span>Happy</span>
+                                        </button>
+                                        <button class="mood-category" data-mood="sad">
+                                            <i class="fas fa-frown"></i>
+                                            <span>Sad</span>
+                                        </button>
+                                        <button class="mood-category" data-mood="anxious">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <span>Anxious</span>
+                                        </button>
+                                        <button class="mood-category" data-mood="calm">
+                                            <i class="fas fa-leaf"></i>
+                                            <span>Calm</span>
+                                        </button>
+                                        <button class="mood-category" data-mood="energetic">
+                                            <i class="fas fa-bolt"></i>
+                                            <span>Energetic</span>
+                                        </button>
+                                        <button class="mood-category" data-mood="tired">
+                                            <i class="fas fa-bed"></i>
+                                            <span>Tired</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Notes Section -->
+                                <div class="form-section">
+                                    <div class="section-header">
+                                        <i class="fas fa-edit"></i>
+                                        <h1>How are you feeling?</h1>
+                                    </div>
+                                    <div class="notes-container">
+                                        <textarea id="moodNote" placeholder="Share what's on your mind... What made you feel this way? Any specific thoughts or events?"></textarea>
+                                        <div class="notes-counter">
+                                            <span id="charCount">0</span>/500 characters
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Actions -->
+                                <div class="form-section">
+                                    <div class="section-header">
+                                        <i class="fas fa-lightbulb"></i>
+                                        <h1>Quick Actions</h1>
+                                    </div>
+                                    <div class="quick-actions-mood">
+                                        <button class="quick-action-btn" data-action="gratitude">
+                                            <i class="fas fa-heart"></i>
+                                            <span>Gratitude</span>
+                                        </button>
+                                        <button class="quick-action-btn" data-action="exercise">
+                                            <i class="fas fa-running"></i>
+                                            <span>Exercise</span>
+                                        </button>
+                                        <button class="quick-action-btn" data-action="meditation">
+                                            <i class="fas fa-om"></i>
+                                            <span>Meditation</span>
+                                        </button>
+                                        <button class="quick-action-btn" data-action="social">
+                                            <i class="fas fa-users"></i>
+                                            <span>Social</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Save Button -->
+                                <div class="form-actions">
+                                    <button class="btn-save-mood" id="saveMoodBtn">
+                                        <i class="fas fa-save"></i>
+                                        <span>Save My Mood</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Modal -->
+                <div id="historyModal" class="modal">
+                    <div class="modal-content history-modal">
+                        <div class="modal-header">
+                            <div class="header-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h2>Your Mood Journey</h2>
+                            <button class="close-btn" id="closeHistoryModal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="history-container">
+                                <!-- Statistics Overview -->
+                                <div class="stats-overview" id="statsOverview">
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <i class="fas fa-calendar-check"></i>
+                                        </div>
+                                        <div class="stat-content">
+                                            <div class="stat-number" id="totalEntries">0</div>
+                                            <div class="stat-label">Total Entries</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <i class="fas fa-smile"></i>
+                                        </div>
+                                        <div class="stat-content">
+                                            <div class="stat-number" id="averageMood">0</div>
+                                            <div class="stat-label">Average Mood</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <i class="fas fa-trending-up"></i>
+                                        </div>
+                                        <div class="stat-content">
+                                            <div class="stat-number" id="streakDays">0</div>
+                                            <div class="stat-label">Day Streak</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <i class="fas fa-heart"></i>
+                                        </div>
+                                        <div class="stat-content">
+                                            <div class="stat-number" id="bestMood">0</div>
+                                            <div class="stat-label">Best Mood</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Mood Chart -->
+                                <div class="mood-chart-container">
+                                    <div class="chart-header">
+                                        <h3>Mood Trend</h3>
+                                        <div class="chart-controls">
+                                            <button class="chart-btn active" data-period="7">7 Days</button>
+                                            <button class="chart-btn" data-period="30">30 Days</button>
+                                            <button class="chart-btn" data-period="90">3 Months</button>
+                                        </div>
+                                    </div>
+                                    <div class="mood-chart" id="moodChart">
+                                        <canvas id="moodChartCanvas"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- Mood History List -->
+                                <div class="history-list-container">
+                                    <div class="list-header">
+                                        <h1>Recent Entries</h1>
+                                        <div class="filter-controls">
+                                            <select id="moodFilter">
+                                                <option value="all">All Moods</option>
+                                                <option value="high">High (8-10)</option>
+                                                <option value="medium">Medium (5-7)</option>
+                                                <option value="low">Low (1-4)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div id="historyContent" class="history-list">
+                                        <div class="empty-state">
+                                            <div class="empty-icon">
+                                                <i class="fas fa-chart-line"></i>
+                                            </div>
+                                            <h3>Start Your Journey</h3>
+                                            <p>No moods logged yet. Start tracking your mood to see your progress and insights!</p>
+                                            <button class="btn-primary" onclick="app.openModal('moodModal')">
+                                                <i class="fas fa-plus"></i>
+                                                Log Your First Mood
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips Modal -->
+                <div id="tipsModal" class="modal">
+                    <div class="modal-content tips-modal">
+                        <div class="modal-header">
+                            <div class="header-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <h2>Self-Care & Wellness Tips</h2>
+                            <button class="close-btn" id="closeTipsModal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="tips-container">
+                                <!-- Featured Tip -->
+                                <div class="featured-tip-section">
+                                    <div class="featured-tip-card" id="featuredTipCard">
+                                        <div class="tip-header">
+                                            <div class="tip-category">
+                                                <i class="fas fa-seedling"></i>
+                                                <span id="tipCategory">Wellness</span>
+                                            </div>
+                                            <button class="refresh-tip-btn" id="refreshTipBtn">
+                                                <i class="fas fa-sync-alt"></i>
+                                            </button>
+                                        </div>
+                                        <div class="tip-content">
+                                            <p id="randomTipText">Click the refresh button to get a personalized self-care suggestion!</p>
+                                        </div>
+                                        <div class="tip-actions">
+                                            <button class="tip-action-btn" id="saveTipBtn">
+                                                <i class="fas fa-bookmark"></i>
+                                                Save Tip
+                                            </button>
+                                            <button class="tip-action-btn" id="shareTipBtn">
+                                                <i class="fas fa-share"></i>
+                                                Share
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tips Categories -->
+                                <div class="tips-categories-section">
+                                    <h3>Browse by Category</h3>
+                                    <div class="category-tabs">
+                                        <button class="category-tab active" data-category="all">
+                                            <i class="fas fa-th-large"></i>
+                                            <span>All Tips</span>
+                                        </button>
+                                        <button class="category-tab" data-category="anxiety">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <span>Anxiety</span>
+                                        </button>
+                                        <button class="category-tab" data-category="energy">
+                                            <i class="fas fa-bolt"></i>
+                                            <span>Energy</span>
+                                        </button>
+                                        <button class="category-tab" data-category="stress">
+                                            <i class="fas fa-brain"></i>
+                                            <span>Stress</span>
+                                        </button>
+                                        <button class="category-tab" data-category="mood">
+                                            <i class="fas fa-smile"></i>
+                                            <span>Mood</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Tips Grid -->
+                                <div class="tips-grid-section">
+                                    <div class="tips-grid" id="allTipsList">
+                                        <!-- Tips will be populated here -->
+                                    </div>
+                                </div>
+
+                                <!-- Saved Tips -->
+                                <div class="saved-tips-section">
+                                    <div class="section-header">
+                                        <h3>
+                                            <i class="fas fa-bookmark"></i>
+                                            Saved Tips
+                                        </h3>
+                                        <button class="clear-saved-btn" id="clearSavedBtn">
+                                            <i class="fas fa-trash"></i>
+                                            Clear All
+                                        </button>
+                                    </div>
+                                    <div class="saved-tips-list" id="savedTipsList">
+                                        <div class="empty-saved">
+                                            <i class="fas fa-bookmark"></i>
+                                            <p>No saved tips yet. Save tips you find helpful!</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Breathing Exercise Modal -->
+                <div id="breathingModal" class="modal">
+                    <div class="modal-content breathing-modal">
+                        <div class="modal-header">
+                            <div class="header-icon">
+                                <i class="fas fa-leaf"></i>
+                            </div>
+                            <h2>Mindful Breathing Exercise</h2>
+                            <button class="close-btn" id="closeBreathingModal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="breathing-container">
+                                <!-- Exercise Selection -->
+                                <div class="exercise-selection">
+                                    <h3>Choose Your Exercise</h3>
+                                    <div class="exercise-options">
+                                        <button class="exercise-option active" data-technique="478">
+                                            <div class="option-icon">
+                                                <i class="fas fa-lungs"></i>
+                                            </div>
+                                            <div class="option-content">
+                                                <h4>4-7-8 Breathing</h4>
+                                                <p>Calming technique for stress relief</p>
+                                                <div class="option-duration">4-5 minutes</div>
+                                            </div>
+                                        </button>
+                                        <button class="exercise-option" data-technique="box">
+                                            <div class="option-icon">
+                                                <i class="fas fa-square"></i>
+                                            </div>
+                                            <div class="option-content">
+                                                <h4>Box Breathing</h4>
+                                                <p>Equal breathing for focus and clarity</p>
+                                                <div class="option-duration">3-4 minutes</div>
+                                            </div>
+                                        </button>
+                                        <button class="exercise-option" data-technique="deep">
+                                            <div class="option-icon">
+                                                <i class="fas fa-circle"></i>
+                                            </div>
+                                            <div class="option-content">
+                                                <h4>Deep Breathing</h4>
+                                                <p>Slow, deep breaths for relaxation</p>
+                                                <div class="option-duration">2-3 minutes</div>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Breathing Visual -->
+                                <div class="breathing-visual">
+                                    <div class="breathing-circle" id="breathingCircle">
+                                        <div class="circle-inner">
+                                            <div class="breathing-text" id="breathingText">
+                                                <h1>Ready to begin?</h1>
+                                                <p>Select an exercise and click start</p>
+                                            </div>
+                                            <div class="breathing-counter" id="breathingCounter">
+                                                <span id="currentCycle">0</span>/<span id="totalCycles">4</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="breathing-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progressFill"></div>
+                                        </div>
+ 
+
+                <!-- Find Help Modal -->
+                <div id="findHelpModal" class="modal">
+                    <div class="modal-content find-help-modal">
+                        <div class="modal-header">
+                            <h2>Find Help Nearby</h2>
+                            <button class="close-btn" id="closeFindHelpModal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="help-container">
+                                <!-- Location Controls -->
+                                <div class="location-controls">
+                                    <div class="form-group">
+                                        <label for="locationInput">Enter your location or use current location:</label>
+                                        <div class="location-input-group">
+                                            <input type="text" id="locationInput" placeholder="Enter city, address, or zip code">
+                                            <button class="btn-secondary" id="useCurrentLocationBtn">
+                                                <i class="fas fa-location-arrow"></i> Use Current Location
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="search-controls">
+                                        <button class="btn-primary" id="searchNearbyBtn">
+                                            <i class="fas fa-search"></i> Find Nearby Help
+                                        </button>
+                                        <div class="loading-spinner" id="loadingSpinner" style="display: none;">
+                                            <i class="fas fa-spinner fa-spin"></i> Searching...
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Crisis Resources -->
+                                <div class="crisis-resources">
+                                    <h3> Emergency</h3>
+                                    <div class="crisis-cards">
+                                        <div class="crisis-card emergency">
+                                            <h4>Ambulance</h4>
+                                            <p><strong>108</strong> - Ambulance Services</p>
+                                            <p>For immediate life-threatening situations</p>
+                                        </div>
+                                        <div class="crisis-card hotline">
+                                            <h4> Fire</h4>
+                                            <p><strong>101</strong> - Fire Services</p>
+                                            <p>Free, 24/7 Fire support via text</p>
+                                        </div>
+                                        <div class="crisis-card hotline">
+                                            <h4>Police </h4>
+                                            <p><strong>100</strong> - Police Services</p>
+                                            <p>Free, confidential support 24/7</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Map Container -->
+                                <div class="map-container">
+                                    <div id="map" class="map"></div>
+                                    <div class="map-legend">
+                                        <div class="legend-item">
+                                            <i class="fas fa-hospital" style="color: #dc2626;"></i>
+                                            <span>Hospitals</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <i class="fas fa-user-md" style="color: #059669;"></i>
+                                            <span>Medical Centers</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <i class="fas fa-brain" style="color: #7c3aed;"></i>
+                                            <span>Mental Health Services</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Results List -->
+                                <div class="results-container">
+                                    <h3>Nearby Healthcare Facilities</h3>
+                                    <div id="resultsList" class="results-list">
+                                        <div class="empty-state">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <p>Enter your location and click "Find Nearby Help" to see healthcare facilities in your area.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Smartwatch Modal -->
+                <div id="watchModal" class="modal">
+                    <div class="modal-content watch-modal">
+                        <div class="modal-header">
+                            <div class="header-icon">
+                                <i class="fas fa-heartbeat"></i>
+                            </div>
+                            <h2>Connect Your Smartwatch</h2>
+                            <button class="close-btn" id="closeWatchModal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="watch-container">
+                                <div class="watch-connect-card">
+                                    <p>Use Web Bluetooth to connect to a compatible heart rate device and sync live data.</p>
+                                    <button class="btn-primary" id="connectHeartRateBtn">
+                                        <i class="fas fa-bluetooth-b"></i> Connect Heart Rate Monitor
+                                    </button>
+                                    <button class="btn-secondary" id="scanAnyBtBtn" style="margin-left: 0.5rem;">
+                                        <i class="fas fa-search"></i> Scan Any Bluetooth Device
+                                    </button>
+                                    <div class="compat-note">
+                                        Requires Chrome/Edge on desktop or Android with Bluetooth enabled.
+                                    </div>
+                                </div>
+                                <div class="watch-stats" id="watchStats" style="display:none;">
+                                    <div class="stat">
+                                        <div class="label">Current HR</div>
+                                        <div class="value" id="currentHR">--</div>
+                                    </div>
+                                    <div class="stat">
+                                        <div class="label">Average (session)</div>
+                                        <div class="value" id="avgHR">--</div>
+                                    </div>
+                                    <div class="stat">
+                                        <div class="label">Samples</div>
+                                        <div class="value" id="samplesHR">0</div>
+                                    </div>
+                                </div>
+                                <div class="watch-log" id="watchLog"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy;Mental Wellbeing App. Take care of yourself! 💚</p>
+        </footer>
+    </div>
+    <!-- delete handler moved into profile dropdown -->
+
+    <!-- Leaflet (OpenStreetMap) - Fallback Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="script.js"></script>
+    <script>
+        // Profile dropdown: show full details and actions (Logout, Delete)
+        (function(){
+            function safeText(s) { return String(s || '').replace(/</g,'&lt;'); }
+            const container = document.getElementById('profileCard');
+            if (!container) return;
+
+            function formatDate(ts) { try { return new Date(Number(ts)).toLocaleString(); } catch (e) { return String(ts); } }
+
+            function closeAllDropdowns() {
+                document.querySelectorAll('.profile-dropdown').forEach(d => d.style.display = 'none');
+            }
+
+            function render() {
+                container.innerHTML = '';
+                const email = localStorage.getItem('loggedInUserEmail');
+                if (!email || !window.Auth || typeof window.Auth.getUserByEmail !== 'function') return;
+                const user = window.Auth.getUserByEmail(email);
+                if (!user) return;
+                const avatar = (user.profile && user.profile.avatarUrl) ? user.profile.avatarUrl : '';
+                const name = (user.profile && user.profile.name) ? user.profile.name : user.email;
+
+                const wrapper = document.createElement('div');
+                wrapper.style.position = 'relative';
+
+                const toggle = document.createElement('button');
+                toggle.type = 'button';
+                toggle.className = 'profile-toggle';
+                toggle.style.display = 'flex'; toggle.style.alignItems = 'center'; toggle.style.gap = '0.5rem'; toggle.style.background = 'transparent'; toggle.style.border = 'none'; toggle.style.cursor = 'pointer';
+
+                const img = document.createElement('img');
+                img.src = avatar || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><rect width="100%" height="100%" fill="%23e0e0e0"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="14" fill="%23666">U</text></svg>';
+                img.alt = safeText(name);
+                img.style.width = '36px'; img.style.height = '36px'; img.style.borderRadius = '50%'; img.style.objectFit = 'cover';
+
+                const span = document.createElement('span');
+                span.style.fontSize = '0.95rem'; span.style.color = '#333'; span.textContent = name;
+
+                toggle.appendChild(img);
+                toggle.appendChild(span);
+
+                const dropdown = document.createElement('div');
+                dropdown.className = 'profile-dropdown';
+                dropdown.style.position = 'absolute';
+                dropdown.style.left = '0';
+                dropdown.style.top = 'calc(100% + 8px)';
+                dropdown.style.minWidth = '220px';
+                dropdown.style.background = '#fff';
+                dropdown.style.border = '1px solid #eee';
+                dropdown.style.boxShadow = '0 6px 18px rgba(0,0,0,0.06)';
+                dropdown.style.padding = '0.6rem';
+                dropdown.style.zIndex = '50';
+                dropdown.style.display = 'none';
+
+                // Build details
+                const details = document.createElement('div');
+                details.style.fontSize = '0.9rem'; details.style.color = '#222'; details.style.marginBottom = '0.5rem';
+                const created = formatDate(user.createdAt);
+                details.innerHTML = `
+                    <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem;">
+                        <img src="${avatar || 'data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"48\" height=\"48\"><rect width=\"100%\" height=\"100%\" fill=\"%23e0e0e0\"/><text x=\"50%\" y=\"55%\" dominant-baseline=\"middle\" text-anchor=\"middle\" font-size=\"16\" fill=\"%23666\">U</text></svg>'}" style="width:48px; height:48px; border-radius:6px; object-fit:cover;" />
+                        <div>
+                            <div style="font-weight:600;">${safeText(name)}</div>
+                            <div style="font-size:0.85rem; color:#666;">${safeText(user.email)}</div>
+                        </div>
+                    </div>
+                    <div style="font-size:0.85rem; color:#444;">
+                        <div><strong>Age:</strong> ${safeText(user.profile && user.profile.age)}</div>
+                        <div><strong>Blood group:</strong> ${safeText(user.profile && user.profile.bloodGroup)}</div>
+                        <div><strong>Height:</strong> ${safeText(user.profile && user.profile.height)}</div>
+                        <div><strong>Weight:</strong> ${safeText(user.profile && user.profile.weight)}</div>
+                        <div><strong>Medical:</strong> ${safeText(user.profile && user.profile.medical)}</div>
+                        <div style="margin-top:0.4rem; font-size:0.8rem; color:#777;"><strong>Account created:</strong> ${safeText(created)}</div>
+                    </div>
+                `;
+
+                const actions = document.createElement('div');
+                actions.style.display = 'flex'; actions.style.justifyContent = 'space-between'; actions.style.marginTop = '0.6rem';
+
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'btn-danger';
+                delBtn.textContent = 'Delete Account';
+                delBtn.style.flex = '1'; delBtn.style.marginRight = '0.5rem';
+
+                const logoutBtn = document.createElement('button');
+                logoutBtn.type = 'button';
+                logoutBtn.className = 'btn-secondary';
+                logoutBtn.textContent = 'Logout';
+                logoutBtn.style.flex = '1';
+
+                const editBtn = document.createElement('button');
+                editBtn.type = 'button';
+                editBtn.className = 'btn-primary';
+                editBtn.textContent = 'Edit Profile';
+                editBtn.style.width = '100%';
+                editBtn.style.marginTop = '0.5rem';
+
+                actions.appendChild(delBtn);
+                actions.appendChild(logoutBtn);
+
+                dropdown.appendChild(details);
+                dropdown.appendChild(actions);
+                dropdown.appendChild(editBtn);
+
+                wrapper.appendChild(toggle);
+                wrapper.appendChild(dropdown);
+                container.appendChild(wrapper);
+
+                // Toggle dropdown
+                toggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const shown = dropdown.style.display === 'block';
+                    closeAllDropdowns();
+                    dropdown.style.display = shown ? 'none' : 'block';
+                });
+
+                // Delete handler
+                delBtn.addEventListener('click', () => {
+                    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
+                    if (!window.Auth || typeof window.Auth.deleteCurrentUser !== 'function') {
+                        window.UI && window.UI.showToast ? window.UI.showToast('Delete account is not available.','error') : alert('Delete account is not available.');
+                        return;
+                    }
+                    const res = window.Auth.deleteCurrentUser();
+                    if (!res || !res.success) {
+                        window.UI && window.UI.showToast ? window.UI.showToast(res && res.message ? res.message : 'Unable to delete account','error') : alert(res && res.message ? res.message : 'Unable to delete account');
+                    }
+                });
+
+                // Logout handler
+                logoutBtn.addEventListener('click', () => {
+                    if (window.Auth && typeof window.Auth.logout === 'function') {
+                        window.Auth.logout();
+                    } else {
+                        localStorage.removeItem('loggedInRole');
+                        localStorage.removeItem('loggedInToken');
+                        localStorage.removeItem('loggedInUserEmail');
+                        window.location.href = 'login.html';
+                    }
+                });
+
+                // Edit profile handler: open simple modal
+                editBtn.addEventListener('click', () => {
+                    // build modal if not present
+                    let modal = document.getElementById('editProfileModal');
+                    if (!modal) {
+                        modal = document.createElement('div');
+                        modal.id = 'editProfileModal';
+                        modal.className = 'modal';
+                        modal.style.display = 'none';
+                        modal.innerHTML = `
+                            <div class="modal-content" style="max-width:520px;">
+                                <div class="modal-header">
+                                    <h2>Edit Profile</h2>
+                                    <button class="close-btn" id="closeEditProfile">&times;</button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="editProfileForm">
+                                        <input type="text" id="editName" placeholder="Full name" />
+                                        <input type="number" id="editAge" placeholder="Age" min="0" />
+                                        <input type="text" id="editBloodGroup" placeholder="Blood group" />
+                                        <input type="text" id="editHeight" placeholder="Height" />
+                                        <input type="text" id="editWeight" placeholder="Weight" />
+                                        <input type="text" id="editMedical" placeholder="Medical problems" />
+                                        <label>Profile picture (optional)</label>
+                                        <input type="file" id="editAvatar" accept="image/*" />
+                                        <div style="margin-top:0.6rem; display:flex; gap:0.5rem;">
+                                            <button type="submit" class="btn-primary">Save</button>
+                                            <button type="button" id="cancelEditProfile" class="btn-secondary">Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(modal);
+                        // Close handlers
+                        modal.querySelector('#closeEditProfile').addEventListener('click', () => { modal.style.display = 'none'; });
+                        modal.querySelector('#cancelEditProfile').addEventListener('click', () => { modal.style.display = 'none'; });
+                        modal.addEventListener('click', (ev) => { if (ev.target === modal) modal.style.display = 'none'; });
+                        // Form submit
+                        modal.querySelector('#editProfileForm').addEventListener('submit', (ev) => {
+                            ev.preventDefault();
+                            const name = document.getElementById('editName').value.trim();
+                            const age = document.getElementById('editAge').value ? Number(document.getElementById('editAge').value) : null;
+                            const bloodGroup = document.getElementById('editBloodGroup').value.trim();
+                            const height = document.getElementById('editHeight').value.trim();
+                            const weight = document.getElementById('editWeight').value.trim();
+                            const medical = document.getElementById('editMedical').value.trim();
+                            const file = document.getElementById('editAvatar').files[0];
+
+                            function doSave(avatarDataUrl) {
+                                const email = localStorage.getItem('loggedInUserEmail');
+                                const profile = { name, age, bloodGroup, height, weight, medical };
+                                if (avatarDataUrl) profile.avatarUrl = avatarDataUrl;
+                                const res = window.Auth.updateUserByEmail(email, { profile });
+                                if (res && res.success) {
+                                    window.UI && window.UI.showToast && window.UI.showToast('Profile updated','success');
+                                    modal.style.display = 'none';
+                                    // re-render profile dropdown
+                                    setTimeout(() => window.location.reload(), 200);
+                                } else {
+                                    window.UI && window.UI.showToast ? window.UI.showToast(res && res.message ? res.message : 'Unable to update profile','error') : alert(res && res.message ? res.message : 'Unable to update profile');
+                                }
+                            }
+
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = function(e) { doSave(e.target.result); };
+                                reader.onerror = function() { doSave(); };
+                                reader.readAsDataURL(file);
+                            } else {
+                                doSave();
+                            }
+                        });
+                    }
+
+                    // Prefill form
+                    const email = localStorage.getItem('loggedInUserEmail');
+                    const user = (window.Auth && window.Auth.getUserByEmail) ? window.Auth.getUserByEmail(email) : null;
+                    if (user) {
+                        document.getElementById('editName').value = user.profile && user.profile.name ? user.profile.name : '';
+                        document.getElementById('editAge').value = user.profile && user.profile.age ? user.profile.age : '';
+                        document.getElementById('editBloodGroup').value = user.profile && user.profile.bloodGroup ? user.profile.bloodGroup : '';
+                        document.getElementById('editHeight').value = user.profile && user.profile.height ? user.profile.height : '';
+                        document.getElementById('editWeight').value = user.profile && user.profile.weight ? user.profile.weight : '';
+                        document.getElementById('editMedical').value = user.profile && user.profile.medical ? user.profile.medical : '';
+                    }
+                    modal.style.display = 'block';
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (ev) => {
+                    if (!wrapper.contains(ev.target)) dropdown.style.display = 'none';
+                });
+            }
+
+            if (window.Auth && typeof window.Auth.getUserByEmail === 'function') render();
+            else window.addEventListener('load', () => setTimeout(render, 50));
+        })();
+    </script>
+</body>
+</html>
