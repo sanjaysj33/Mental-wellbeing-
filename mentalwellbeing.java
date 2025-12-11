@@ -34,7 +34,7 @@ class TipDatabase {
         tips.add("Stressed? Close your eyes and imagine a peaceful place for 2 minutes.");
         tips.add("Irritable? Drink a glass of water and take 10 deep breaths.");
         tips.add("Lonely? Reach out to a friend with a quick message.");
-        tips.add("Happy? Share your joy—tell someone about it!");
+        tips.add("Happy? Share your joytell someone about it!");
     }
 
     public static String getRandomTip() {
@@ -79,7 +79,8 @@ class BreathingExercise {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        System.out.println("Exercise complete. Breathe easy! 🌿\n");
+        System.out.println("Exercise complete. Breathe easy! 33
+");
     }
 
     private static void countDown(int seconds) {
@@ -107,7 +108,7 @@ public class mentalwellbeing {
         boolean running = true;
         while (running) {
             printMenu();
-            int choice = getIntInput("Enter your choice (1-5): ");
+            int choice = getIntInput("Enter your choice (1-6): ");
 
             switch (choice) {
                 case 1:
@@ -126,7 +127,7 @@ public class mentalwellbeing {
                     BreathingExercise.guideBreathing();
                     break;
                 case 6:
-                    System.out.println("Take care! Prioritize your wellbeing. 💚");
+                    System.out.println("Take care! Prioritize your wellbeing. 49a");
                     running = false;
                     break;
                 default:
@@ -185,10 +186,11 @@ public class mentalwellbeing {
             System.out.print(prompt);
             try {
                 value = Integer.parseInt(scanner.nextLine());
-                if (value >= 1 && value <= 10) { // For mood rating validation
+                if (value >= 1 && value <= 10 && !prompt.contains("choice")) {
+                    // For mood rating validation
                     break;
                 } else if (prompt.contains("choice")) {
-                    // Allow any int for menu
+                    // For menu choice validation, allow any integer
                     break;
                 } else {
                     System.out.println("Please enter a number between 1 and 10.");
